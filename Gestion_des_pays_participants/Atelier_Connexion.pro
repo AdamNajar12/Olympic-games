@@ -27,11 +27,13 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    connection.cpp
+    connection.cpp \
+    pays.cpp
 
 HEADERS += \
         mainwindow.h \
-    connection.h
+    connection.h \
+    pays.h
 
 FORMS += \
         mainwindow.ui
@@ -40,3 +42,8 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resource.qrc \
+    resource.qrc \
+    resource.qrc

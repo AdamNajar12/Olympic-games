@@ -1,19 +1,15 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "joueurs.h"
-#include <QMessageBox>
-#include <QApplication>
-#include <iostream>
-#include <equipes.h>
+#include "lieux.h"
+#include<QSqlQuery>
+#include<QSqlQueryModel>
+#include<QMessageBox>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-   //ui->comboBox->addItem("bilel");
-    ui->tabjoueurs->setModel(j.afficher());
-ui->tabviewequipes->setModel(e.afficher());
 }
 
 MainWindow::~MainWindow()
@@ -22,137 +18,66 @@ MainWindow::~MainWindow()
 }
 
 
-
-
-void MainWindow::on_PB_ajouter_clicked()
+void MainWindow::on_pushButton_2_clicked()
 {
-
-    QString prenom=ui->LE_prenom->text();
-    QString nom=ui->LE_nom->text();
-    QString ids=ui->LE_id->text();
-
-    int id =ui->LE_id->text().toInt();//toint permet de convertir lid entier;
-    if (prenom!="" & nom!="" & ids!="")
+    QSqlQuery query;
+    int Id =ui->lineEdit->text().toInt();
+    QString Nom=ui->lineEdit_2->text();
+    QString Prenom=ui->lineEdit_3->text();
+    lieux C(Id,Nom,Prenom);
+    bool alreadyExist = false;
+    query.prepare("select * from lieux where id_lieux=:id_lieux");
+    query.bindValue(":id_lieux",Id);
+    if(!query.exec())
     {
-    joueurs j(prenom,nom,id);
-    bool test=j.ajouter();
-        if(test)
-    {
-            QMessageBox::information(nullptr, QObject::tr("OK"),
-                        QObject::tr("Ajout effectue\n"
-                                    "Click Cancel to exit."), QMessageBox::Cancel);
-
-
-
-
-    }
-        else
-            QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                        QObject::tr("Ajout non effectue.\n"
-                                    "Click Cancel to exit."), QMessageBox::Cancel);
+        QMessageBox::critical(nullptr, QObject::tr("ERROR"),
+        QObject::tr("Failed adding.\n"
+        "Click Cancel to exit."), QMessageBox::Cancel);
     }
 
-else {
-QMessageBox::critical(nullptr, QObject::tr("Chaine non vide"),
-                QObject::tr("Nom ou Prenom ou id est vide.\n"
-                        "Click Cancel to exit."), QMessageBox::Cancel);
-
+    alreadyExist = query.next();
+    if(alreadyExist){
+    QString a; a.setNum(Id);
+    C.modifier(a);
+    QMessageBox::information(nullptr, QObject::tr("SUCCESS"),
+    QObject::tr("UPDATED.\n"
+    "Click Cancel to exit."), QMessageBox::Cancel);
+    }
+    else{
+              C.ajouter();
+    }
+    ui->tableView->setModel(C.afficher());
 }
-
-}
-
-void MainWindow::on_SUPPRIMERPB_clicked()
-{
-    int id=ui->idsuppresionle->text().toInt();
-    bool test=j.supprimer(id);
-    if(test)
-{
-        QMessageBox::information(nullptr, QObject::tr("OK"),
-                    QObject::tr("suppression effectue\n"
-                                "Click Cancel to exit."), QMessageBox::Cancel);
-
-
-
-
-}
-    else
-        QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                    QObject::tr("suppression non effectue.\n"
-                                "Click Cancel to exit."), QMessageBox::Cancel);
-}
-
 
 void MainWindow::on_pushButton_clicked()
 {
-    joueurs j;
-      ui->tabjoueurs->setModel(j.afficher());
-}
-
-
-
-
-void MainWindow::on_ajouterequipes_clicked()
-{
-    QString categorie=ui->lecategorie->text();
-    QString nom=ui->lenom->text();
-    QString nb=ui->lenombrejoueurs->text();
-     QString id=ui->leidequipes->text();
-
-    int nbs =ui->lenombrejoueurs->text().toInt();//toint permet de convertir lid entier;
-     int ids =ui->leidequipes->text().toInt();
-    if (categorie!="" & nom!="" & nb!=""& id!="")
-    {
-   equipes e(categorie,nom,nbs,ids);
-    bool test=e.ajouter();
-        if(test)
-    {
-            QMessageBox::information(nullptr, QObject::tr("OK"),
-                        QObject::tr("Ajout effectue\n"
-                                    "Click Cancel to exit."), QMessageBox::Cancel);
-
-
-
-
-    }
-        else
-            QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                        QObject::tr("Ajout non effectue.\n"
-                                    "Click Cancel to exit."), QMessageBox::Cancel);
-    }
-
-else {
-QMessageBox::critical(nullptr, QObject::tr("Chaine non vide"),
-                QObject::tr("Nom ou Prenom ou id est vide.\n"
-                        "Click Cancel to exit."), QMessageBox::Cancel);
-
-}
-
-}
-
-
-void MainWindow::on_pbsupprimerequipes_clicked()
-{
-    int id=ui->lineeditsupp->text().toInt();
-    bool test=e.supprimer(id);
+    int Id =ui->lineEdit->text().toInt();
+    lieux C;
+    bool test=C.supprimer(Id);
     if(test)
-{
-        QMessageBox::information(nullptr, QObject::tr("OK"),
-                    QObject::tr("suppression effectue\n"
-                                "Click Cancel to exit."), QMessageBox::Cancel);
+    {
+         ui->tableView->setModel(C.afficher());
+        QMessageBox::information(nullptr, QObject::tr("ok"),QObject::tr("Ajout effectué.\n click cancel to exit."),QMessageBox::Cancel);
 
-
-
-
-}
+    }
     else
-        QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                    QObject::tr("suppression non effectue.\n"
-                                "Click Cancel to exit."), QMessageBox::Cancel);
+       QMessageBox::critical(nullptr, QObject::tr("Not ok"),QObject::tr("Ajout non effectué.\n click cancel to exit."),QMessageBox::Cancel);
 }
 
-void MainWindow::on_pbafficherequipes_clicked()
+void MainWindow::on_pushButton_3_clicked()
 {
-    equipes e;
-    ui->tabviewequipes->setModel(e.afficher());
+    val_lieux=ui->lineEdit_4->text();
+    ui->tabWidget_lieux->setCurrentIndex(0);
+    QSqlQuery qry;
+    qry.prepare("SELECT * FROM lieux where id_lieux='"+val_lieux+"'");
+    if(qry.exec( ))
+    {
+        while (qry.next())
+        {
+            ui->lineEdit->setText(qry.value(0).toString());
+            ui->lineEdit_2->setText(qry.value(1).toString());
+            ui->lineEdit_3->setText(qry.value(2).toString());
+        }
 
+    }
 }

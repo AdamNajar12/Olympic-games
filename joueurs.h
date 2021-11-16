@@ -1,33 +1,27 @@
 #ifndef JOUEURS_H
 #define JOUEURS_H
 #include <QString>
-#include <QSqlQuery>
-#include <QSqlQueryModel>
-
-
-class joueurs
-{private:
+#include<QSqlQueryModel>
+class JOUEURS
+{QString nom;
     QString prenom;
-    QString nom;
-    int ID;
+    int id ;
 
-public: 
-    joueurs();
-    joueurs(QString a,QString b,int c);
+public:
+    JOUEURS();
+    JOUEURS(QString,QString);
+     JOUEURS(QString,QString,int);
+
     QString get_nom();
     QString get_prenom();
-    int get_id();
-    void set_nom(QString nom);
-    void set_prenom(QString prenom);
-    void set_id(int id);
-    bool ajouter();
-    bool supprimer(int i);
-   QSqlQueryModel *afficher();
-
-
-
-
-
+    void set_nom(QString);
+    void set_prenom(QString);
+    bool ajoute_joueur();
+    QSqlQueryModel *afficher_joueur();
+    bool supprimer_joueur(int id);
+    bool update(int id);
+    QStringList sup_id();
+     QSqlQueryModel *afficher_joueur_equipe(int id);
 
 };
 

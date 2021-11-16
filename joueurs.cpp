@@ -1,78 +1,108 @@
 #include "joueurs.h"
+
 #include<QSqlQuery>
-#include <QtDebug>
-#include <QObject>
-joueurs::joueurs()
+#include<QtDebug>
+#include<QObject>
+JOUEURS::JOUEURS()
 {
-prenom="";
 nom="";
-ID=0;
-}
-joueurs::joueurs(QString a,QString b,int c)
-{
-   prenom=a;
-   nom=b;
-   ID=c;
-}
-
-QString joueurs::get_prenom()
-{
-    return prenom;
-}
-QString joueurs::get_nom()
-{
-    return nom;
-}
-int joueurs::get_id()
-{
-    return ID;
+prenom="";
+id=0;
 
 }
-void joueurs::set_prenom(QString prenom)
+
+JOUEURS::JOUEURS(QString a,QString b,int i)
 {
-    this->prenom=prenom;
-}
-void joueurs::set_nom(QString nom)
-{
- this->nom=nom;
+   nom=a;
+  prenom=b;
+ id=i;
 
 }
-void joueurs::set_id(int id)
+JOUEURS::JOUEURS(QString a,QString b)
 {
-    this->ID=id;
+   nom=a;
+  prenom=b;
+
+
 }
-bool joueurs::ajouter()
+QString JOUEURS::get_nom()
+{return nom; }
+QString JOUEURS::get_prenom()
+{return prenom;}
+void JOUEURS::set_nom(QString nom)
+{this->nom=nom;}
+void JOUEURS::set_prenom(QString prenom)
+{this->prenom=prenom;}
+bool JOUEURS::ajoute_joueur()
 {
 
     QSqlQuery query;
-    QString test= QString::number(ID);
-          query.prepare("INSERT INTO joueurs (id, prenom, nom) "
-                        "VALUES (:id, :prenom, :nom)");
-          query.bindValue(":id",test);
-          query.bindValue(":prenom",prenom);
-          query.bindValue(":nom",nom);
-
-
-          return query.exec();//EXECUTER LA REQUETTE
-
+    query.prepare("INSERT INTO joueur (nom,prenom,id_equipe) VALUES ( :nom, :prenom,:id_equipe);");
+query.bindValue(":id_equipe",id );
+   query.bindValue(":nom",nom );
+   query.bindValue(":prenom",prenom);
+    return query.exec();
 }
-
- QSqlQueryModel* joueurs::afficher()
- {
-     QSqlQuery query ;
-     QSqlQueryModel *model=new QSqlQueryModel();
-query.prepare("SELECT * FROM joueurs");
-query.exec();
-model->setQuery(query);
-
-     return model;
-
- }
-bool joueurs::supprimer(int id)
+QSqlQueryModel* JOUEURS::afficher_joueur()
 {
     QSqlQuery query;
-   query.prepare("Delete from joueurs where ID= :id");
-   query.bindValue(":id",id);
- return query.exec();
+        QSqlQueryModel* model= new QSqlQueryModel();
+
+        query.prepare("SELECT* FROM joueur ");
+              query.exec();
+              model->setQuery(query);
+
+
+       return model;
+}
+bool JOUEURS::supprimer_joueur(int id)
+{
+QString rid=QString::number(id);
+    QSqlQuery query;
+    query.prepare("Delete from joueur where id_joueur=:id ");
+    query.bindValue(":id", rid);
+
+    return query.exec();
 
 }
+bool JOUEURS::update(int id)
+{QString rid=QString::number(id);
+
+    QSqlQuery query;
+       query.prepare(QString("update joueur set nom=:nom,prenom=:prenom where id_joueur=:id"));
+
+       query.bindValue(":id",rid);
+       query.bindValue(":nom",nom);
+       query.bindValue(":prenom",prenom);
+
+
+     return  query.exec();
+}
+QStringList JOUEURS::sup_id(){
+    QSqlQuery query;
+query.prepare("Select id_joueur from joueur;");
+
+
+ query.exec();
+    QStringList list;
+    while (query.next()) {
+        list << query.value(0).toString();
+    }
+    return list;
+}
+QSqlQueryModel* JOUEURS::afficher_joueur_equipe(int id)
+{
+    QSqlQuery query;
+        QSqlQueryModel* model= new QSqlQueryModel();
+        QString rid=QString::number(id);
+
+        query.prepare("SELECT nom,prenom FROM joueur where id_equipe=:id");
+        query.bindValue(":id",rid);
+              query.exec();
+              model->setQuery(query);
+
+
+       return model;
+}
+
+

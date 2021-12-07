@@ -5,7 +5,7 @@
 #include <QSqlQueryModel>
 #include <QComboBox>
 #include "joueurs.h"
-
+#include"arduino.h"
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -54,6 +54,23 @@ mo->setQuery(f);
 
     ui->comboBox_2->addItems(e.sup_id());
     ui->comboBox_3->addItems(j.sup_id());
+
+
+
+
+    int ret=A.connect_arduino(); // lancer la connexion à arduino
+      switch(ret){
+      case(0):qDebug()<< "arduino is available and connected to : "<< A.getarduino_port_name();
+          break;
+      case(1):qDebug() << "arduino is available but not connected to :" <<A.getarduino_port_name();
+         break;
+      case(-1):qDebug() << "arduino is not available";
+      }
+
+      QObject::connect(A.getserial(),SIGNAL(readyRead()),this,SLOT(update_label())); // permet de lancer
+          //le slot update_label suite à la reception du signal readyRead (reception des données).
+      ui->comboBox_3->addItems(j.sup_id());
+
 
 
 }
@@ -133,10 +150,13 @@ void MainWindow::on_pushButton_3_clicked()
     QString nom=ui->lenomjoueur->text();
     QString prenom=ui->leprenomjoueur->text();
     int id=ui->comboBox_6->currentText().toInt();
+int b=ui->comboBox_9->currentText().toInt();
 
 
-       JOUEURS j(nom,prenom,id);
-    bool test=j.ajoute_joueur();
+       JOUEURS j(nom,prenom,id,b);
+    if(b!=1)
+       {
+        bool test=j.ajoute_joueur();
 
 
     if(test)
@@ -154,6 +174,40 @@ void MainWindow::on_pushButton_3_clicked()
                                           "Click Cancel to exit."), QMessageBox::Cancel);
 
     }
+    }
+    else
+{
+
+
+
+A.write_to_arduino("1");
+
+
+bool test=j.ajoute_joueur();
+
+
+            if(test)
+            {
+
+                QMessageBox::information(nullptr, QObject::tr("OK"),
+                              QObject::tr("Ajout effectue\n"
+                                          "Click Cancel to exit."), QMessageBox::Cancel);
+
+
+
+            }
+            else
+            {QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
+                                      QObject::tr("Ajout non effectue\n"
+                                                  "Click Cancel to exit."), QMessageBox::Cancel);
+
+            }
+
+
+}
+
+
+
 
 }
 
@@ -161,6 +215,8 @@ void MainWindow::on_pushButton_4_clicked()
 {
      ui->tableViewjoueur->setModel(j.afficher_joueur());
 }
+
+
 
 void MainWindow::on_supprimer_2_clicked()
 {
@@ -294,3 +350,25 @@ void MainWindow::on_pushButton_11_clicked()
 {
      ui->tableView_5->setModel(e.afficher_historiques());
 }
+void MainWindow::update_label()
+{
+    data=A.read_from_arduino();
+if(data=="0")
+ { bool test=j.update_etat();
+if(test)
+{
+        QMessageBox::information(nullptr, QObject::tr("OK"),
+                    QObject::tr("update effectue\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+
+
+
+
+}
+    else
+        QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
+                    QObject::tr("update non effectue.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+}
+}
+

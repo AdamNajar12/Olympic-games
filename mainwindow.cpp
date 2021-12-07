@@ -1,60 +1,34 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QMessageBox>
+#include "discipline.h"
 #include <QSqlQuery>
-#include <QSqlQueryModel>
-#include <QComboBox>
-#include "joueurs.h"
+#include <QMessageBox>
+#include <QSqlTableModel>
+#include <QDebug>
+#include<QSqlError>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
 {
+    discipline d;
     ui->setupUi(this);
-    QSqlQueryModel *model=new QSqlQueryModel();
-    QSqlQueryModel *modell=new QSqlQueryModel();
-    QSqlQueryModel *modelll=new QSqlQueryModel();
-    QSqlQueryModel *modellll=new QSqlQueryModel();
-     QSqlQueryModel *mode=new QSqlQueryModel();
-      QSqlQueryModel *mo=new QSqlQueryModel();
-
-    QSqlQuery query,q,i,v,r,f;
-    query.prepare("SELECT NOM_DISCIPLINE FROM DISCIPLINES");
-    r.prepare("SELECT NOM_DISCIPLINE FROM DISCIPLINES");
-f.prepare("SELECT nom FROM equipe");
-    q.prepare("SELECT id_joueur FROM joueur");
-   i.prepare("SELECT id_equipe FROM equipe");
-
-   v.prepare("SELECT id_equipe FROM equipe");
+    ui->tableView_Discipline->setModel(tmpDiscipline.afficher());
+    ui->tableViewRECH->setModel(d.chercher(ui->lineEdit_Rechercher->text()));
+    ui->table_notif->setModel(tmpDiscipline.afficher());
 
 
-    query.exec();
-     q.exec();
-     i.exec();
-     v.exec();
-     r.exec();
-     f.exec();
-mo->setQuery(f);
-    model->setQuery(query);
-     modell->setQuery(q);
-      modelll->setQuery(i);
-      modellll->setQuery(v);
-       mode->setQuery(r);
+    int ret=A.connect_arduino(); // lancer la connexion à arduino
+        switch(ret){
+        case(0):qDebug()<< "arduino is available and connected to : "<< A.getarduino_port_name();
+            break;
+        case(1):qDebug() << "arduino is available but not connected to :" <<A.getarduino_port_name();
+           break;
+        case(-1):qDebug() << "arduino is not available";
+            break;
+        }
 
-
-    ui->comboBox->setModel(model);
-    ui->comboBox_4->setModel(modell);
-     ui->comboBox_5->setModel(modelll);
-      ui->comboBox_6->setModel(modellll);
-          ui->comboBox_7->setModel(modellll);
-          ui->comboBox_8->setModel(mode);
-          ui->listedenom->setModel(mo);
-
-
-
-    ui->comboBox_2->addItems(e.sup_id());
-    ui->comboBox_3->addItems(j.sup_id());
-
+    //QObject::connect(A.getserial(),SIGNAL(readyRead()),this,SLOT(update_label())); //permet de lancer le slot update_label suite à la récupération du signal readyRead
 
 }
 
@@ -63,234 +37,216 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::on_pushButton_A_clicked()
+{
+     A.write_to_arduino("welcome ");
+}
+
+void MainWindow::on_pushButton_R_clicked()
+{
+     A.write_to_arduino("refuser ");
+}
+
+
+void MainWindow::on_pushButtonajouter_clicked()
+{
+    int id=ui->lineEditIddiscipline->text().toInt();
+    QString nom=ui->lineEditNomdiscipline->text();
+    QString type=ui->lineEditTypediscipline->text();
+
+
+    discipline d(id, nom, type);
+    bool test= d.ajouter();
+if(d.select()){A.write_to_arduino("5");}
+
+    if(test)
+    {
+        ui->tableView_Discipline->setModel(tmpDiscipline.afficher());//refresh
+        QMessageBox::information(nullptr, QObject::tr("Ajouter discipline"),
+                                 QObject::tr("Discipline ajouté.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+
+}
+    else
+        QMessageBox::critical(nullptr, QObject::tr(" Ajout discipline"),
+                    QObject::tr("Ajout echoué.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+}
+
+
 void MainWindow::on_pushButton_clicked()
 {
-QString dis=ui->comboBox->currentText();
-QString nom=ui->lenom->text();
-int nb=ui->lenb->text().toInt();
-int score=ui->lescore->text().toInt();
-      equipe e(dis,nom,nb,score);
- bool test=e.ajouter_equipe();
+    int id = ui->lineEditsupprimer->text().toInt();
+    bool test=tmpDiscipline.supprimer(id);
+    if(test)
+    {
+        ui->tableView_Discipline->setModel(tmpDiscipline.afficher());//refresh
+        QMessageBox::information(nullptr, QObject::tr("Supprimer discipline"),
+                                 QObject::tr("Discipline supprimé.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+
+}
+    else
+        QMessageBox::critical(nullptr, QObject::tr(" Supprimer discipline"),
+                    QObject::tr("Supression echouée.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
+}
 
 
-if(test)
+
+
+void MainWindow::on_pushButtonmodifier_clicked()
 {
-      QMessageBox::information(nullptr, QObject::tr("OK"),
-                  QObject::tr("Ajout effectue\n"
+
+discipline k(ui->lineEditmodifer->text().toInt(),ui->linee_nom->text(),ui->linee_type->text());
+  bool test=k.modifier(ui->lineEditmodifer->text().toInt());
+
+  if(test)
+  {
+      ui->tableView_Discipline->setModel(tmpDiscipline.afficher());//refresh
+      QMessageBox::information(nullptr, QObject::tr("Modifier discipline"),
+                               QObject::tr("Discipline modifié.\n"
+                              "Click Cancel to exit."), QMessageBox::Cancel);
+
+}
+  else
+      QMessageBox::critical(nullptr, QObject::tr(" Modifier discipline"),
+                  QObject::tr("Modification echouée.\n"
                               "Click Cancel to exit."), QMessageBox::Cancel);
 
 
-    ui->comboBox_2->addItems(e.sup_id());
 
 }
-else
-{QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                          QObject::tr("Ajout non effectue\n"
-                                      "Click Cancel to exit."), QMessageBox::Cancel);
 
+
+void MainWindow::on_afficher_c_clicked()
+{
+    discipline d;
+    ui->table_calendrier->setModel(d.afficher_calendrier());
 }
- }
 
-void MainWindow::on_pushButton_2_clicked()
+
+
+void MainWindow::on_pushButton_Rechercher_clicked()
 {
 
-   ui->tabafficher->setModel(e.afficher());
+    ui->tableViewRECH->setModel(tmpDiscipline.afficher());
+    QString str=ui->lineEdit_Rechercher->text();
+    ui->tableViewRECH->setModel(tmpDiscipline.chercher(str));
 }
 
-void MainWindow::on_supprimer_clicked()
+void MainWindow::on_pushButton_his_clicked()
 {
-    int id=ui->comboBox_2->currentText().toInt();
+    QString nom=ui->lineEdit_his->text();
+   // histoire h(football,basktball,volleyball)
+    QString football,basketball,volleyball;
 
-
-     bool test=e.supprimer(id);
-
-    if(test)
+    if(nom=="football")
     {
-            QMessageBox::information(nullptr, QObject::tr("OK"),
-                        QObject::tr("Suppression effectue\n"
-                                    "Click Cancel to exit."), QMessageBox::Cancel);
+        ui->tableView_his->setModel(tmpDiscipline.afficher());//refresh
+        QMessageBox::information(nullptr, QObject::tr("Histoire du discipline"),
+                                 QObject::tr("Le Football est un sport collectif qui se joue avec un ballon sphérique entre deux équipes de onze joueurs. Le début de ce jeu était en Angleterre en 1873 pour se répandre et conquérir le monde et devenir le sport le plus populaire .\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);}
 
-    ui->comboBox_2->addItems(e.sup_id());
+      if(nom=="basketball")
+        {
+            ui->tableView_his->setModel(tmpDiscipline.afficher());//refresh
+            QMessageBox::information(nullptr, QObject::tr("Histoire du discipline"),
+                                     QObject::tr("Le basketball, aussi appelé basket, a été inventé en décembre 1891 par le Canadien James W. Naismith. Instructeur du YMCA Training School dans le Massachusetts, il cherchait un jeu d'intérieur adapté afin que ses élèves restent en forme et au chaud pendant les hivers rigoureux de la Nouvelle-Angleterre. .\n"
+                                    "Click Cancel to exit."), QMessageBox::Cancel);}
 
+            if(nom=="volleyball")
+            {
+                ui->tableView_his->setModel(tmpDiscipline.afficher());//refresh
+                QMessageBox::information(nullptr, QObject::tr("Histoire du discipline"),
+                                         QObject::tr("Le volley-ball est un sport collectif opposant deux équipes de six joueurs séparés par un filet, qui s'affrontent avec un ballon sur un terrain rectangulaire de 18 mètres de long sur 9 mètres de large. Avec 600 millions de pratiquants en 2007, il s'agit d'un des sports les plus pratiqués dans le monde .\n"
+                                        "Click Cancel to exit."), QMessageBox::Cancel);
 
-    }
-        else
-            QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                        QObject::tr("Suppression non effectue.\n"
-                                    "Click Cancel to exit."), QMessageBox::Cancel);
 }
-
-
-
-
-void MainWindow::on_comboBox_currentTextChanged(const QString &arg1)
-{
-ui->lenomdisp->setText(arg1);
-}
-
-void MainWindow::on_pushButton_3_clicked()
-{
-    QString nom=ui->lenomjoueur->text();
-    QString prenom=ui->leprenomjoueur->text();
-    int id=ui->comboBox_6->currentText().toInt();
-
-
-       JOUEURS j(nom,prenom,id);
-    bool test=j.ajoute_joueur();
-
-
-    if(test)
-    {
-          QMessageBox::information(nullptr, QObject::tr("OK"),
-                      QObject::tr("Ajout effectue\n"
-                                  "Click Cancel to exit."), QMessageBox::Cancel);
-
-
-
-    }
     else
-    {QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                              QObject::tr("Ajout non effectue\n"
-                                          "Click Cancel to exit."), QMessageBox::Cancel);
-
-    }
-
+        QMessageBox::critical(nullptr, QObject::tr(" Histoire du discipline"),
+                    QObject::tr("Discipline introuvable.\n"
+                                "Click Cancel to exit."), QMessageBox::Cancel);
 }
 
-void MainWindow::on_pushButton_4_clicked()
+
+void MainWindow::on_pushButton_EnvoyerReclamation_clicked()
 {
-     ui->tableViewjoueur->setModel(j.afficher_joueur());
+
+    QString Reclamation=ui->textEdit_reclamation->toPlainText() ;
+
+
+          discipline d;
+
+                if( d.reclamer(Reclamation))
+               {
+                    QMessageBox::information(nullptr, QObject::tr("ok"),
+                                                                     QObject::tr("Reclamation Envoyée .  .\n" "Click Cancel to exit."), QMessageBox::Cancel);
+
+
+                ui->textEdit_reclamation->setText("")  ;
+
+              } else  QMessageBox::critical(nullptr, QObject::tr("ERROR"),
+                                                  QObject::tr("CHAMP VIDE .\n" "Click Cancel to exit."), QMessageBox::Cancel);
+
+
 }
 
-void MainWindow::on_supprimer_2_clicked()
+
+
+
+
+
+
+/*
+void Gestion::on_pushButton_EnvoyerReclamation_clicked()
 {
-   int id=ui->comboBox_3->currentText().toInt();
+
+    QSqlQuery query ;
+    QString Reclamation=ui->textEdit_reclamation->toPlainText() ;
+     QString ID_C=ui->lineEdit_ID_C->text() ;
+    query.prepare("Select ID_C from Disciplines WHERE ID_C=:ID_C ");
+    query.bindValue(":ID_C",ID_C) ;
+    query.exec() ;
+
+        bool alreadyExist = false ;
+            alreadyExist = query.next();
+            if(alreadyExist)
+            {
+
+                if(Reclamation.size()>0)
+               {
+                QMessageBox msgbox ;
+                msgbox.setText("Reclamation Envoyée . \n") ;
+                msgbox.exec() ;
+                ui->textEdit_reclamation->setText("")  ;
+                ui->lineEdit_ID_C->setText("") ;
+               }
+                else  QMessageBox::critical(nullptr, QObject::tr("ERROR"),
+                                                  QObject::tr("CHAMP VIDE .\n" "Click Cancel to exit."), QMessageBox::Cancel);
 
 
-     bool test=j.supprimer_joueur(id);
+            }
+          else
+                         {
 
-    if(test)
-    {
-            QMessageBox::information(nullptr, QObject::tr("OK"),
-                        QObject::tr("Suppression effectue\n"
-                                    "Click Cancel to exit."), QMessageBox::Cancel);
- ui->comboBox_3->addItems(j.sup_id());
+                           ui->textEdit_reclamation->setText("")  ;
+                           ui->lineEdit_ID_C->setText("") ;
+                           QMessageBox::critical(nullptr, QObject::tr("ERROR"),
+                                                  QObject::tr("CENTRE INTROUVABLE .\n" "Click Cancel to exit."), QMessageBox::Cancel);
+                         }
 
 
 
-    }
-        else
-            QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                        QObject::tr("Suppression non effectue.\n"
-                                    "Click Cancel to exit."), QMessageBox::Cancel);
+
+
 }
 
 
-void MainWindow::on_pushButton_6_clicked()
+void MainWindow::on_lineEdit_Rechercher_cursorPositionChanged(int arg1, int arg2)
 {
-    QString nom=ui->lenomupdated->text();
-    int nb=ui->lenbupdated->text().toInt();
-    QString dis=ui->comboBoxupdated->currentText();
-     int score=ui->lescoreupdated->text().toInt();
-          equipe e(dis,nom,nb,score);
-        bool  test=e.update_equipe(ui->comboBox_5->currentText().toInt());
-
-
-          if(test)
-          {
-                  QMessageBox::information(nullptr, QObject::tr("OK"),
-                              QObject::tr("update effectue\n"
-                                          "Click Cancel to exit."), QMessageBox::Cancel);
-
-
-
-
-          }
-              else
-                  QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                              QObject::tr("update non effectue.\n"
-                                          "Click Cancel to exit."), QMessageBox::Cancel);
+    discipline d;
+        ui->tableViewRECH->setModel(d.chercher(ui->lineEdit_Rechercher->text()));
 }
+*/
 
-void MainWindow::on_pushButton_5_clicked()
-{
-    QString nom=ui->LENOMJUPDATED->text();
-    QString prenom=ui->leprenomjoueurupdated->text();
-
-    JOUEURS j(nom,prenom);
-        bool  test=j.update(ui->comboBox_4->currentText().toInt());
-
-
-          if(test)
-          {
-                  QMessageBox::information(nullptr, QObject::tr("OK"),
-                              QObject::tr("update effectue\n"
-                                          "Click Cancel to exit."), QMessageBox::Cancel);
-
-
-
-
-          }
-              else
-                  QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                              QObject::tr("update non effectue.\n"
-                                          "Click Cancel to exit."), QMessageBox::Cancel);
-}
-
-void MainWindow::on_pushButton_7_clicked()
-{
-ui->tableView->setModel(e.classementfoot());
-}
-
-void MainWindow::on_pushButton_8_clicked()
-{
-    ui->tableView_2->setModel(e.classementbasket());
-}
-
-void MainWindow::on_pushButton_9_clicked()
-{int dis=ui->comboBox_7->currentText().toInt();
-
-     ui->tableView_3->setModel(j.afficher_joueur_equipe(dis));
-}
-
-void MainWindow::on_pushButton_10_clicked()
-{
-     ui->tableView_4->setModel(e.afficher_historiques_equipe());
-}
-
-void MainWindow::on_pushButton_13_clicked()
-{
-    QString dis=ui->comboBox_8->currentText();
-    QString nom=ui->listedenom->currentText();
-   QString score=ui->lineediterecords->text();
-    equipe e(dis,score,nom);
-bool test=e.ajouter_equipe_records();
-
-
-if(test)
-{
-    QMessageBox::information(nullptr, QObject::tr("OK"),
-                QObject::tr("Ajout effectue\n"
-                            "Click Cancel to exit."), QMessageBox::Cancel);
-
-
-
-
-}
-else
-{QMessageBox::critical(nullptr, QObject::tr("NOT OK"),
-                        QObject::tr("Ajout non effectue\n"
-                                    "Click Cancel to exit."), QMessageBox::Cancel);
-}}
-
-void MainWindow::on_pushButton_12_clicked()
-{ QString dis=ui->comboBox_8->currentText();
-    QString nom=ui->listedenom->currentText();
-   QString score=ui->lineediterecords->text();
-     ui->tableView_6->setModel(e.afficher_records());
-}
-
-void MainWindow::on_pushButton_11_clicked()
-{
-     ui->tableView_5->setModel(e.afficher_historiques());
-}

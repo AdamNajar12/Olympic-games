@@ -3,6 +3,7 @@
 #include "joueurs.h"
 #include <QMainWindow>
 #include "equipe.h"
+#include"arduino.h"
 namespace Ui {
 class MainWindow;
 }
@@ -27,7 +28,7 @@ private slots:
 
     void on_pushButton_3_clicked();
 
-
+void update_label();
 
     void on_comboBox_currentTextChanged(const QString &arg1);
 
@@ -56,6 +57,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+QByteArray data;
+    Arduino A;
 
 };
 

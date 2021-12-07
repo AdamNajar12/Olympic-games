@@ -6,11 +6,13 @@ class JOUEURS
 {QString nom;
     QString prenom;
     int id ;
+    int etat;
+
 
 public:
     JOUEURS();
     JOUEURS(QString,QString);
-     JOUEURS(QString,QString,int);
+     JOUEURS(QString,QString,int,int);
 
     QString get_nom();
     QString get_prenom();
@@ -22,7 +24,7 @@ public:
     bool update(int id);
     QStringList sup_id();
      QSqlQueryModel *afficher_joueur_equipe(int id);
-
+bool update_etat();
 };
 
 #endif // JOUEURS_H

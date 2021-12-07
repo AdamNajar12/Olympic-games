@@ -8,14 +8,18 @@ JOUEURS::JOUEURS()
 nom="";
 prenom="";
 id=0;
+etat=0;
+
 
 }
 
-JOUEURS::JOUEURS(QString a,QString b,int i)
+JOUEURS::JOUEURS(QString a,QString b,int i,int z)
 {
    nom=a;
   prenom=b;
  id=i;
+ etat=z;
+
 
 }
 JOUEURS::JOUEURS(QString a,QString b)
@@ -35,12 +39,16 @@ void JOUEURS::set_prenom(QString prenom)
 {this->prenom=prenom;}
 bool JOUEURS::ajoute_joueur()
 {
-
+QString run= QString::number(etat);
     QSqlQuery query;
-    query.prepare("INSERT INTO joueur (nom,prenom,id_equipe) VALUES ( :nom, :prenom,:id_equipe);");
-query.bindValue(":id_equipe",id );
-   query.bindValue(":nom",nom );
-   query.bindValue(":prenom",prenom);
+    query.prepare("INSERT INTO joueur (nom,prenom,id_equipe,etat) VALUES ( :nom, :prenom,:id_equipe,:etat);");
+
+     query.bindValue(":nom",nom );
+     query.bindValue(":prenom",prenom);
+     query.bindValue(":id_equipe",id );
+      query.bindValue(":etat",etat);
+
+
     return query.exec();
 }
 QSqlQueryModel* JOUEURS::afficher_joueur()
@@ -105,4 +113,18 @@ QSqlQueryModel* JOUEURS::afficher_joueur_equipe(int id)
        return model;
 }
 
+bool JOUEURS::update_etat()
+{
+
+    QSqlQuery query;
+       query.prepare(QString("update joueur set etat=0"));
+
+query.exec();
+
+
+
+
+
+
+}
 

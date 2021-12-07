@@ -141,3 +141,4 @@ QSqlQueryModel *lieux::rechercher(QString rech)
     return model;
 }
 
+

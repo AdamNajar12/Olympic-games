@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/rec">
+        <file>Nouveau dossier/Algerie.png</file>
+        <file>Nouveau dossier/australia.png</file>
+        <file>Nouveau dossier/Belgique.png</file>
+        <file>Nouveau dossier/Brazil.png</file>
+        <file>Nouveau dossier/Canada.png</file>
+        <file>Nouveau dossier/chine.png</file>
+        <file>Nouveau dossier/Croitia.png</file>
+        <file>Nouveau dossier/Danemark.png</file>
+        <file>Nouveau dossier/egypte.png</file>
+        <file>Nouveau dossier/france.png</file>
+        <file>Nouveau dossier/germany.png</file>
+        <file>Nouveau dossier/Italie.png</file>
+        <file>Nouveau dossier/japon.png</file>
+        <file>Nouveau dossier/pays-bas.png</file>
+        <file>Nouveau dossier/portugal.png</file>
+        <file>Nouveau dossier/Spain.png</file>
+        <file>Nouveau dossier/suede.png</file>
+        <file>Nouveau dossier/tunisie.png</file>
+        <file>Nouveau dossier/USA.png</file>
+    </qresource>
+</RCC>
